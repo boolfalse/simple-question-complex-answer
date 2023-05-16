@@ -1,0 +1,36 @@
+{
+  "name": "simple-question-complex-answer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Telegram bot built with Node.js",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./src/index.js",
+    "dev": "nodemon ./src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/boolfalse/simple-question-complex-answer.git"
+  },
+  "keywords": [
+    "node",
+    "telegram"
+  ],
+  "author": "boolfalse",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/boolfalse/simple-question-complex-answer/issues"
+  },
+  "homepage": "https://github.com/boolfalse/simple-question-complex-answer#readme",
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "nodemon": "^2.0.22"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "dotenv": "^16.0.3",
+    "fluent-ffmpeg": "^2.1.2",
+    "telegraf": "^4.12.2"
+  }
+}
