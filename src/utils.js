@@ -1,4 +1,5 @@
 
+import AWS from 'aws-sdk';
 import fs from 'fs';
 import fluent from 'fluent-ffmpeg';
 import axios from 'axios';
@@ -81,8 +82,42 @@ const emptyFolder = async (folder) => {
 }
 
 // text to voice
-const textToVoice = async (text, filePath) => {
-    //
+const textToVoice = async (text, folderPath) => {
+    AWS.config.credentials = new AWS.Credentials(
+        process.env.AWS_ACCESS_KEY,
+        process.env.AWS_SECRET_KEY
+    );
+    AWS.config.region = "us-west-2";
+
+    // The text-to-speech service
+    const Polly = new AWS.Polly({
+        signatureVersion: 'v4',
+        region: 'us-west-2'
+    });
+
+    const params = {
+        'Text': text,
+        'OutputFormat': 'ogg_vorbis',
+        'VoiceId': 'Joanna'
+    };
+
+    const data = await Polly.synthesizeSpeech(params).promise();
+    if (data.AudioStream instanceof Buffer) {
+        const fileName = Date.now();
+        const filePath = `${folderPath}/${fileName}.oga`;
+        await fs.writeFile(filePath, data.AudioStream, (err) => err && console.error(err));
+
+        return {
+            success: true,
+            file_path: filePath,
+            message: 'Text to voice success!',
+        };
+    } else {
+        return {
+            success: false,
+            message: 'Text to voice failed!',
+        };
+    }
 }
 
 export default {
@@ -92,4 +127,5 @@ export default {
     speechToText,
     getAnswer,
     emptyFolder,
+    textToVoice,
 };

@@ -19,8 +19,24 @@ bot.on(message('text'), async (ctx) => {
         return;
     }
 
-    // send text to user
-    await ctx.reply(resAnswerText.message.content);
+    const userId = ctx.message.from.id;
+    const folderPath = path.resolve(`./voices/${userId}`);
+
+    // text to voice
+    const resTextToVoice = await utils.textToVoice(resAnswerText.message.content, folderPath);
+    if (!resTextToVoice || !resTextToVoice.success) {
+        // send text to user
+        await ctx.reply(resAnswerText.message.content);
+        return;
+    }
+
+    // send voice to user
+    await ctx.replyWithVoice({
+        source: resTextToVoice.file_path,
+    });
+
+    // empty folder
+    await utils.emptyFolder(folderPath);
 });
 
 bot.on(message('voice'), async (ctx) => {
@@ -60,8 +76,21 @@ bot.on(message('voice'), async (ctx) => {
                 return;
             }
 
-            // send text to user
-            await ctx.reply(resAnswerText.message.content);
+            // empty folder
+            await utils.emptyFolder(folderPath);
+
+            // text to voice
+            const resTextToVoice = await utils.textToVoice(resAnswerText.message.content, folderPath);
+            if (!resTextToVoice || !resTextToVoice.success) {
+                // send text to user
+                await ctx.reply(resAnswerText.message.content);
+                return;
+            }
+
+            // send voice to user
+            await ctx.replyWithVoice({
+                source: resTextToVoice.file_path,
+            });
 
             // empty folder
             await utils.emptyFolder(folderPath);
