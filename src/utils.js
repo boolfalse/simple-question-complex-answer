@@ -5,7 +5,7 @@ import fluent from 'fluent-ffmpeg';
 import axios from 'axios';
 import { exec } from 'child_process';
 
-// check if user folder exists named userId, if not create it
+// check if user folder exists, if not create it
 const folderStructureSync = (folder) => {
     if (!fs.existsSync(folder)) {
         fs.mkdirSync(folder);
@@ -104,7 +104,7 @@ const textToVoice = async (text, folderPath) => {
     const data = await Polly.synthesizeSpeech(params).promise();
     if (data.AudioStream instanceof Buffer) {
         const fileName = Date.now();
-        const filePath = `${folderPath}/${fileName}.oga`;
+        const filePath = `${folderPath}/${fileName}.wav`;
         await fs.writeFile(filePath, data.AudioStream, (err) => err && console.error(err));
 
         return {
