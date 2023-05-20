@@ -120,6 +120,28 @@ const textToVoice = async (text, folderPath) => {
     }
 }
 
+const filterAnswer = async (originalText) => {
+    let text = originalText;
+
+    if (text.includes('Google Bard')) {
+        text = text.replace('Google Bard', 'SQCA bot');
+    }
+    if (text.includes('Bard of Google')) {
+        text = text.replace('Bard of Google', 'SQCA bot');
+    }
+    if (text.includes('Bard')) {
+        text = text.replace('Bard', 'SQCA bot');
+    }
+    if (text.includes('https://bard.google.com')) {
+        text = text.replace('https://bard.google.com', 'boolfalse.com');
+    }
+    if (text.includes('https://bard.google.com')) {
+        text = text.replace('https://bard.google.com', 'boolfalse.com');
+    }
+
+    return text;
+}
+
 export default {
     download,
     folderStructureSync,
@@ -128,4 +150,5 @@ export default {
     getAnswer,
     emptyFolder,
     textToVoice,
+    filterAnswer,
 };

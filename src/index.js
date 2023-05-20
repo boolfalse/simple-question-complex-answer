@@ -166,8 +166,11 @@ bot.on(message('text'), async (ctx) => {
 
     const folderPath = path.resolve(`./voices/${userTelegramId}`);
 
+    // filter/modify the response answer got from Google Bard
+    const filteredAnswer = await utils.filterAnswer(resAnswerText.message.content);
+
     // text to voice
-    const resTextToVoice = await utils.textToVoice(resAnswerText.message.content, folderPath);
+    const resTextToVoice = await utils.textToVoice(filteredAnswer, folderPath);
     if (!resTextToVoice || !resTextToVoice.success) {
         // add message to DB
         const dbMessage = await handlers.createMessage({
@@ -182,7 +185,7 @@ bot.on(message('text'), async (ctx) => {
         await utils.emptyFolder(folderPath);
 
         // send text to user
-        await ctx.reply(resAnswerText.message?.content || "Sorry. We couldn't convert text to voice!");
+        await ctx.reply(filteredAnswer); // || "Sorry. We couldn't convert text to voice!"
 
         return;
     }
@@ -336,8 +339,11 @@ bot.on(message('voice'), async (ctx) => {
                 return;
             }
 
+            // filter/modify the response answer got from Google Bard
+            const filteredAnswer = await utils.filterAnswer(resAnswerText.message.content);
+
             // text to voice
-            const resTextToVoice = await utils.textToVoice(resAnswerText.message.content, folderPath);
+            const resTextToVoice = await utils.textToVoice(filteredAnswer, folderPath);
             if (!resTextToVoice || !resTextToVoice.success) {
                 const dbMessage = await handlers.createMessage({
                     user: dbUser._id,
@@ -349,7 +355,7 @@ bot.on(message('voice'), async (ctx) => {
                 });
 
                 // send text to user
-                await ctx.reply(resAnswerText.message?.content || "Sorry. We couldn't convert answer to voice!");
+                await ctx.reply(filteredAnswer); // || "Sorry. We couldn't convert answer to voice!"
 
                 return;
             }
