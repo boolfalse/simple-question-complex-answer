@@ -6,40 +6,47 @@ import { message } from "telegraf/filters";
 import utils from "./utils.js";
 import handlers from "./handlers.js";
 import path from "path";
-import connectDB from "./../config/db.js";
 import commands from "../config/commands.js";
+import connectDB from "./../config/db.js";
+import settings from "../config/settings.js";
+connectDB();
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 bot.command('start', async (ctx) => {
     const userTelegramId = ctx.message.from.id;
+    let answerMessage = '';
 
     // check if user exists in DB, if not create it
     let dbUser = await handlers.getUser(userTelegramId);
-    if (!dbUser) {
+    if (dbUser) {
+        // build multiline text message
+        answerMessage += 'I\'m an assistant. Just ask me anything using text or voice messages.'
+    } else {
         dbUser = await handlers.createUser({
             telegram_id: userTelegramId,
             username: ctx.message.from.username,
             name: ctx.message.from.first_name,
         });
+        // build multiline text message
+        answerMessage = `\u{1F64B} Hello ${dbUser.name}! \n\n`;
+        answerMessage += 'Below are the commands you can use:\n\n';
+        Object.keys(commands).forEach((command) => {
+            answerMessage += `/${command} - ${commands[command]}\n`;
+        });
+        answerMessage += '\nYou can send up to 10 questions per day, and in case of voice messages, up to 60 seconds per day.';
+        answerMessage += '\n\nHappy hacking! \u{1F680}';
     }
 
-    // build multiline text message
-    let startMessage = `\u{1F64B} Hello ${dbUser.name}! \n\n`;
-    Object.keys(commands).forEach((command) => {
-        startMessage += `/${command} - ${commands[command]}\n`;
-    });
-    startMessage += '\n\nHappy hacking! \u{1F680}';
-
     // send text to user
-    await ctx.reply(startMessage);
+    await ctx.reply(answerMessage);
 
     // add message to DB
     const dbMessage = await handlers.createMessage({
         user: dbUser._id,
         question_type: 'command',
         command: 'start',
-        answer_text: textMessage,
+        answer_text: answerMessage,
         answer_status: 1,
     });
 });
@@ -57,17 +64,17 @@ bot.command('new', async (ctx) => {
         });
     }
 
-    let newMessage = "Previous conversation ended. You can start a new one \u{1F609}";
+    let answerMessage = "Previous conversation ended. You can start a new one \u{1F609}";
 
     // send text to user
-    await ctx.reply(newMessage);
+    await ctx.reply(answerMessage);
 
     // add message to DB
     const dbMessage = await handlers.createMessage({
         user: dbUser._id,
         question_type: 'command',
         command: 'new',
-        answer_text: newMessage,
+        answer_text: answerMessage,
         answer_status: 1,
     });
 });
@@ -86,22 +93,21 @@ bot.command('help', async (ctx) => {
     }
 
     // build multiline text message
-    let helpMessage = `These are bot commands:\n\n`;
+    let answerMessage = `These are bot commands:\n\n`;
     Object.keys(commands).forEach((command) => {
-        helpMessage += `/${command} - ${commands[command]}\n`;
+        answerMessage += `/${command} - ${commands[command]}\n`;
     });
-    helpMessage += commands.join('\n');
-    helpMessage += '\n\nJust use them if need!';
+    answerMessage += '\nJust use them if need!';
 
     // send text to user
-    await ctx.reply(helpMessage);
+    await ctx.reply(answerMessage);
 
     // add message to DB
     const dbMessage = await handlers.createMessage({
         user: dbUser._id,
         question_type: 'command',
         command: 'help',
-        answer_text: helpMessage,
+        answer_text: answerMessage,
         answer_status: 1,
     });
 });
@@ -120,8 +126,29 @@ bot.on(message('text'), async (ctx) => {
         });
     }
 
+    // check if 'limited_until' exists and not expired
+    if (dbUser.limited_until && new Date() < dbUser.limited_until) {
+        const answerMessage = `Sorry, you have exceeded the daily limit.` +
+            `\nIt is max ${settings.max_questions_per_day} messages per day, ` +
+            `and max ${settings.max_voice_messages_length_per_day} seconds for the voice messages.` +
+            `\n\nPlease try again tomorrow! \u{1F609}`;
+
+        // send text to user
+        await ctx.reply(answerMessage);
+
+        // add message to DB
+        const dbMessage = await handlers.createMessage({
+            user: dbUser._id,
+            question_type: 'text',
+            question_text: questionMessage,
+            answer_status: 4,
+        });
+
+        return;
+    }
+
     // get answer from Google Bard
-    const resAnswerText = await utils.getAnswer(message);
+    const resAnswerText = await utils.getAnswer(questionMessage);
     if (!resAnswerText || !resAnswerText.success) {
         // add message to DB
         const dbMessage = await handlers.createMessage({
@@ -181,14 +208,29 @@ bot.on(message('text'), async (ctx) => {
 
     // empty folder
     await utils.emptyFolder(folderPath);
+
+    if (!dbUser.isAdmin) {
+        // review user limit
+        const limitExceeded = await handlers.isLimitExceeded(dbUser._id);
+        if (limitExceeded) {
+            const limit = new Date().getTime() + 24 * 60 * 60 * 1000;
+            await handlers.updateUser(dbUser._id, {
+                limit_exceeded: true,
+                limited_until: new Date(limit),
+            });
+        } else {
+            await handlers.updateUser(dbUser._id, {
+                limit_exceeded: false,
+                limited_until: null,
+            });
+        }
+    }
 });
 
 bot.on(message('voice'), async (ctx) => {
     try {
         const questionVoiceFile = await ctx.telegram.getFileLink(ctx.message.voice.file_id);
         const userTelegramId = ctx.message.from.id;
-        const fileName = ctx.message.voice.file_unique_id;
-        const folderPath = path.resolve(`./voices/${userTelegramId}`);
 
         // check if user exists in DB, if not create it
         let dbUser = await handlers.getUser(userTelegramId);
@@ -199,6 +241,30 @@ bot.on(message('voice'), async (ctx) => {
                 name: ctx.message.from.first_name,
                 // isAdmin: false,
             });
+        }
+
+        const fileName = ctx.message.voice.file_unique_id;
+        const folderPath = path.resolve(`./voices/${userTelegramId}`);
+
+        // check if 'limited_until' exists and not expired
+        if (!dbUser.isAdmin && dbUser.limited_until && new Date() < dbUser.limited_until) {
+            const answerMessage = `Sorry, you have exceeded the daily limit.` +
+                `\nIt is max ${settings.max_questions_per_day} messages per day, ` +
+                `and max ${settings.max_voice_messages_length_per_day} seconds for the voice messages.` +
+                `\n\nPlease try again tomorrow! \u{1F609}`;
+
+            // send text to user
+            await ctx.reply(answerMessage);
+
+            // add message to DB
+            const dbMessage = await handlers.createMessage({
+                user: dbUser._id,
+                question_type: 'voice',
+                question_voice_url: questionVoiceFile.href,
+                answer_status: 4,
+            });
+
+            return;
         }
 
         // check if user folder exists named userTelegramId, if not create it
@@ -301,6 +367,7 @@ bot.on(message('voice'), async (ctx) => {
                 question_type: 'voice',
                 question_text: resSpeechToText.message || '',
                 question_voice_url: questionVoiceFile.href,
+                question_voice_duration: ctx.message.voice.duration,
                 answer_type: 'voice',
                 answer_text: resAnswerText.message?.content || '',
                 answer_voice_url: answerVoiceFile.href || '',
@@ -309,73 +376,30 @@ bot.on(message('voice'), async (ctx) => {
 
             // empty folder
             await utils.emptyFolder(folderPath);
+
+            if (!dbUser.isAdmin) {
+                // review user limit
+                const limitExceeded = await handlers.isLimitExceeded(dbUser._id);
+                if (limitExceeded) {
+                    const limit = new Date().getTime() + 24 * 60 * 60 * 1000;
+                    await handlers.updateUser(dbUser._id, {
+                        limit_exceeded: true,
+                        limited_until: new Date(limit),
+                    });
+                } else {
+                    await handlers.updateUser(dbUser._id, {
+                        limit_exceeded: false,
+                        limited_until: null,
+                    });
+                }
+            }
         }, 3000);
     } catch (err) {
         console.log(err.message || "Something went wrong!");
     }
 });
 
-bot.command('test', async (ctx) => {
-    const userTelegramId = ctx.message.from.id;
-
-    // check if user exists in DB, if not create it
-    let dbUser = await handlers.getUser(userTelegramId);
-    if (!dbUser) {
-        dbUser = await handlers.createUser({
-            telegram_id: userTelegramId,
-            username: ctx.message.from.username,
-            name: ctx.message.from.first_name,
-        });
-    }
-
-    const answerMessage = `Hello, ${dbUser.name}, the test was successful!`;
-    const folderPath = path.resolve(`./voices/${userTelegramId}`);
-
-    // text to voice
-    const resTextToVoice = await utils.textToVoice(answerMessage, folderPath);
-    if (!resTextToVoice || !resTextToVoice.success) {
-        // add message to DB
-        const dbMessage = await handlers.createMessage({
-            user: dbUser._id,
-            question_type: 'command',
-            command: 'test',
-            answer_type: 'text',
-            answer_text: resTextToVoice?.message || '',
-            answer_status: 3,
-        });
-
-        // send text to user
-        await ctx.reply(resTextToVoice?.message || "Sorry. We couldn't convert answer to voice!");
-
-        return;
-    }
-
-    // send voice to user
-    const answerVoice = await ctx.replyWithVoice({
-        source: resTextToVoice.file_path,
-    });
-
-    // get answer voice
-    const answerVoiceFile = await ctx.telegram.getFileLink(answerVoice.voice.file_id);
-
-    // add message to DB
-    const dbMessage = await handlers.createMessage({
-        user: dbUser._id,
-        question_type: 'command',
-        command: 'test',
-        answer_type: 'voice',
-        answer_text: answerMessage,
-        answer_voice_url: answerVoiceFile.href || '',
-        answer_status: 1,
-    });
-
-    // empty folder
-    await utils.emptyFolder(folderPath);
-});
-
 bot.launch();
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
-
-connectDB();

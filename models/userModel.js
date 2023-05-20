@@ -21,6 +21,15 @@ const userSchema = mongoose.Schema({
         required: true,
         unique: true,
     },
+    limit_exceeded: {
+        type: Boolean,
+        required: true,
+        default: false,
+    },
+    limited_until: {
+        type: Date,
+        required: false,
+    },
     isAdmin: {
         type: Boolean,
         required: true,

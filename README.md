@@ -17,7 +17,7 @@ npm install
 
 2. Create a `.env` file in the root directory of the project and add the following:
 ```bash
-# Create a new bot with @BotFather and add the token here
+# Create a new bot with [@BotFather](https://t.me/botfather/) and add the token here
 TELEGRAM_BOT_TOKEN=""
 
 # Usually it's "python3" or kind of "/usr/local/bin/python3.10"
@@ -33,6 +33,7 @@ AWS_ACCESS_KEY=""
 AWS_SECRET_KEY=""
 
 # MongoDB Atlas connection string
+# make sure that the IP whitelisted
 MONGO_URL="mongodb+srv://<USER>:<PASSWORD>@cluster0.mzcsh.mongodb.net/<DB_NAME>?retryWrites=true&w=majority"
 ```
 
@@ -46,7 +47,7 @@ npm start
 forever list
 # Stop all running forever scripts
 forever stopall
-# Start SCRIPT as a daemon
+# Start as a daemon
 forever start server.js
 
 # Development
@@ -56,11 +57,15 @@ npm run dev
 
 #### TODOs:
 - [ ] Add used resources to the "Resources" section
+- [ ] Refactor codebase (middlewares)
+- [ ] Logging/error-handling (file writing, Slack/Telegram notification)
 - [ ] Modify DB for multiple sessions
 - [ ] Add "/new" command with session management
 - [ ] Add command to leave chat
 - [ ] Add invitation functionality
 - [ ] Add usage limit to non-invited users
+- [ ] Queue messages to avoid any 3rd party APIs limitations
+- [ ] Use messaging system (e.g. Kafka, RabbitMQ)
 
 
 #### Resources:

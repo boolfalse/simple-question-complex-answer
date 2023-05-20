@@ -29,6 +29,10 @@ const messageSchema = mongoose.Schema({
         type: String,
         required: false,
     },
+    question_voice_duration: { // question_type: voice
+        type: Number,
+        required: false,
+    },
     answer_type: {
         type: String,
         required: true,
@@ -45,7 +49,7 @@ const messageSchema = mongoose.Schema({
     answer_status: {
         type: Number,
         required: true,
-        default: 0, // 0: pending, 1: answered, 2: rejected, 3: error
+        default: 0, // 0: pending, 1: answered, 2: rejected, 3: error, 4: limit_exceeded
     },
 }, {
     timestamps: true,
