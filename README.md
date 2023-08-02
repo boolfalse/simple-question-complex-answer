@@ -5,6 +5,7 @@
 
 **Node.js app that uses Google Bard to generate messages for a Telegram bot**
 
+<img src="https://i.imgur.com/GysRG06.png" alt="sqca" />
 
 #### Installation:
 
@@ -72,6 +73,7 @@ npm run dev
 
 - [Telegram Bot API](https://core.telegram.org/bots/api)
 - [Non-official python package Google Bard API](https://github.com/dsdanielpark/Bard-API/)
+- My own Telegram channel demo: [https://t.me/sqca_bot](https://t.me/sqca_bot)
 
 
 #### Author:
