@@ -35,7 +35,7 @@ const speechToText = async (filePath) => {
         const pythonExec = process.env.PYTHON_EXEC_PATH || 'python';
         exec(`${pythonExec} python/transcribe.py "${filePath}"`, (err, stdout, stderr) => {
             if (err) {
-                // console.log(err.message);
+                console.error(err.message);
                 reject(err);
             } else {
                 resolve(stdout);
@@ -48,12 +48,13 @@ const speechToText = async (filePath) => {
 
 // get answer from Google Bard
 const getAnswer = async (text) => {
-    const gbSecret = process.env.GOOGLE_BARD_SECRET;
+    const gb1psid = process.env.GOOGLE_BARD_SECURE_1PSID;
+    const gb1psidts = process.env.GOOGLE_BARD_SECURE_1PSIDTS;
     const result = await new Promise((resolve, reject) => {
         const pythonExec = process.env.PYTHON_EXEC_PATH || 'python';
-        exec(`${pythonExec} python/answer.py "${gbSecret}" "${text}"`, (err, stdout, stderr) => {
+        exec(`${pythonExec} python/answer.py "${gb1psid}" "${gb1psidts}" "${text}"`, (err, stdout, stderr) => {
             if (err) {
-                // console.log(err.message);
+                console.error(err.message);
                 reject(err);
             } else {
                 resolve(stdout);
@@ -68,13 +69,13 @@ const getAnswer = async (text) => {
 const emptyFolder = async (folder) => {
     fs.readdir(folder, (err, files) => {
         if (err) {
-            // console.log(err.message);
+            console.error(err.message);
         }
 
         for (const file of files) {
             fs.unlink(`${folder}/${file}`, err => {
                 if (err) {
-                    // console.log(err.message);
+                    console.error(err.message);
                 }
             });
         }

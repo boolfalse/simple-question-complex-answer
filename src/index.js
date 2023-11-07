@@ -166,6 +166,9 @@ bot.on(message('text'), async (ctx) => {
 
     const folderPath = path.resolve(`./voices/${userTelegramId}`);
 
+    // check if user folder exists named userTelegramId, if not create it
+    utils.folderStructureSync(folderPath);
+
     // filter/modify the response answer got from Google Bard
     const filteredAnswer = await utils.filterAnswer(resAnswerText.message.content);
 

@@ -3,57 +3,85 @@
 
 ---
 
-**Node.js app that uses Google Bard to generate messages for a Telegram bot**
+**Telegram bot that answers to your questions with a voice message.**
 
-<img src="https://i.imgur.com/GysRG06.png" alt="sqca" />
+<img src="https://i.imgur.com/mKNNZNv.jpg" alt="sqca" />
+
+_A Simple Question => A Complex Answer_
+
+
+
+#### Prerequisites:
+
+- Node.js 18.* or higher installed
+- Python 3.* and pip installed
+
+
 
 #### Installation:
 
-1. Clone the repo and install dependencies:
-```bash
-git clone git@github.com:boolfalse/simple-question-complex-answer.git
-cd simple-question-complex-answer/
+- Create a new AWS IAM user, give it access to [Polly](https://aws.amazon.com/polly/).
+
+- Create a new Telegram bot with [@BotFather](https://t.me/botfather/).
+
+- Create a new [Telegram channel](https://web.telegram.org/) and add the bot as an admin.
+
+- Create a new [MongoDB Atlas](https://cloud.mongodb.com/) cluster and set up IP whitelist.
+
+- Have a [Google Bard](https://bard.google.com/) account.
+In a browser open inspect element. `__Secure-1PSID`, `__Secure-1PSIDTS` cookie values from `Application` -> `Cookies` -> `https://accounts.google.com`
+
+- Clone the repo and install dependencies:
+```shell
+git clone git@github.com:boolfalse/simple-question-complex-answer.git && cd simple-question-complex-answer/
 npm install
 ```
 
-2. Create a `.env` file in the root directory of the project and add the following:
-```bash
-# Create a new bot with [@BotFather](https://t.me/botfather/) and add the token here
+- Install python dependencies:
+```shell
+pip3 install bardapi
+pip3 install --upgrade GoogleBard
+```
+
+- Create a `.env` file in the root directory of the project and add the following:
+```shell
+# @BotFather token here
 TELEGRAM_BOT_TOKEN=""
 
 # Usually it's "python3" or kind of "/usr/local/bin/python3.10"
 PYTHON_EXEC_PATH="python3"
 
-# (for chrome) open []() inspect element:
-# Application -> Cookies -> https://accounts.google.com -> "__Secure-1PSID"
-# copy the value and add it here
-GOOGLE_BARD_SECRET=""
+# Copy values and add it here respectively
+GOOGLE_BARD_SECURE_1PSID=""
+GOOGLE_BARD_SECURE_1PSIDTS=""
 
-# Create a new AWS IAM user, give it access to Polly and add the keys here
+# AWS IAM user keys
 AWS_ACCESS_KEY=""
 AWS_SECRET_KEY=""
 
 # MongoDB Atlas connection string
-# make sure that the IP whitelisted
 MONGO_URL="mongodb+srv://<USER>:<PASSWORD>@cluster0.mzcsh.mongodb.net/<DB_NAME>?retryWrites=true&w=majority"
 ```
 
-3. Run the app:
-```bash
-# Production
-npm start
+- Run the app:
+  - Development:
+  ```shell
+  npm run dev
+  ```
+  - Production:
+  ```shell
+  npm run start
+  ```
+  - Command samples on production:
+  ```shell
+  # start
+  forever start -c "npm run start" ./
+  # list
+  forever list
+  # stop
+  forever stop <pid>
+  ```
 
-# On server
-# List all running forever scripts
-forever list
-# Stop all running forever scripts
-forever stopall
-# Start as a daemon
-forever start server.js
-
-# Development
-npm run dev
-```
 
 
 #### TODOs:
@@ -69,11 +97,14 @@ npm run dev
 - [ ] Use messaging system (e.g. Kafka, RabbitMQ)
 
 
+
 #### Resources:
 
+- Demo Telegram channel: [https://t.me/sqca_bot](https://t.me/sqca_bot)
 - [Telegram Bot API](https://core.telegram.org/bots/api)
 - [Non-official python package Google Bard API](https://github.com/dsdanielpark/Bard-API/)
-- My own Telegram channel demo: [https://t.me/sqca_bot](https://t.me/sqca_bot)
+- [Python SDK/API for reverse engineered Google Bard](https://github.com/acheong08/Bard/)
+
 
 
 #### Author:
