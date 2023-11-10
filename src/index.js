@@ -41,8 +41,8 @@ bot.command('start', async (ctx) => {
     // send text to user
     await ctx.reply(answerMessage);
 
-    // add message to DB
-    const dbMessage = await handlers.createMessage({
+    // add a message to DB
+    await handlers.createMessage({
         user: dbUser._id,
         question_type: 'command',
         command: 'start',
@@ -69,8 +69,8 @@ bot.command('new', async (ctx) => {
     // send text to user
     await ctx.reply(answerMessage);
 
-    // add message to DB
-    const dbMessage = await handlers.createMessage({
+    // add a message to DB
+    await handlers.createMessage({
         user: dbUser._id,
         question_type: 'command',
         command: 'new',
@@ -102,8 +102,8 @@ bot.command('help', async (ctx) => {
     // send text to user
     await ctx.reply(answerMessage);
 
-    // add message to DB
-    const dbMessage = await handlers.createMessage({
+    // add a message to DB
+    await handlers.createMessage({
         user: dbUser._id,
         question_type: 'command',
         command: 'help',
@@ -136,8 +136,8 @@ bot.on(message('text'), async (ctx) => {
         // send text to user
         await ctx.reply(answerMessage);
 
-        // add message to DB
-        const dbMessage = await handlers.createMessage({
+        // add a message to DB
+        await handlers.createMessage({
             user: dbUser._id,
             question_type: 'text',
             question_text: questionMessage,
@@ -150,8 +150,8 @@ bot.on(message('text'), async (ctx) => {
     // get answer from Google Bard
     const resAnswerText = await utils.getAnswer(questionMessage);
     if (!resAnswerText || !resAnswerText.success) {
-        // add message to DB
-        const dbMessage = await handlers.createMessage({
+        // add a message to DB
+        await handlers.createMessage({
             user: dbUser._id,
             question_type: 'text',
             question_text: questionMessage,
@@ -175,8 +175,8 @@ bot.on(message('text'), async (ctx) => {
     // text to voice
     const resTextToVoice = await utils.textToVoice(filteredAnswer, folderPath);
     if (!resTextToVoice || !resTextToVoice.success) {
-        // add message to DB
-        const dbMessage = await handlers.createMessage({
+        // add a message to DB
+        await handlers.createMessage({
             user: dbUser._id,
             question_type: 'text',
             question_text: questionMessage,
@@ -201,8 +201,8 @@ bot.on(message('text'), async (ctx) => {
     // get answer voice
     const answerVoiceFile = await ctx.telegram.getFileLink(answerVoice.voice.file_id);
 
-    // add message to DB
-    const dbMessage = await handlers.createMessage({
+    // add a message to DB
+    await handlers.createMessage({
         user: dbUser._id,
         question_type: 'text',
         question_text: questionMessage,
@@ -262,8 +262,8 @@ bot.on(message('voice'), async (ctx) => {
             // send text to user
             await ctx.reply(answerMessage);
 
-            // add message to DB
-            const dbMessage = await handlers.createMessage({
+            // add a message to DB
+            await handlers.createMessage({
                 user: dbUser._id,
                 question_type: 'voice',
                 question_voice_url: questionVoiceFile.href,
@@ -282,8 +282,8 @@ bot.on(message('voice'), async (ctx) => {
         // convert .oga to .wav
         const resConvert = await utils.convert(`${folderPath}/${fileName}.oga`, `${folderPath}/${fileName}.wav`);
         if (!resConvert) {
-            // add message to DB
-            const dbMessage = await handlers.createMessage({
+            // add a message to DB
+            await handlers.createMessage({
                 user: dbUser._id,
                 question_type: 'voice',
                 question_voice_url: questionVoiceFile.href,
@@ -304,8 +304,8 @@ bot.on(message('voice'), async (ctx) => {
             // extract text from .wav
             const resSpeechToText = await utils.speechToText(`./../voices/${userTelegramId}/${fileName}.wav`);
             if (!resSpeechToText || !resSpeechToText.success) {
-                // add message to DB
-                const dbMessage = await handlers.createMessage({
+                // add a message to DB
+                await handlers.createMessage({
                     user: dbUser._id,
                     question_type: 'voice',
                     question_voice_url: questionVoiceFile.href,
@@ -327,8 +327,8 @@ bot.on(message('voice'), async (ctx) => {
             // get answer from Google Bard
             const resAnswerText = await utils.getAnswer(resSpeechToText.message);
             if (!resAnswerText || !resAnswerText.success) {
-                // add message to DB
-                const dbMessage = await handlers.createMessage({
+                // add a message to DB
+                await handlers.createMessage({
                     user: dbUser._id,
                     question_type: 'voice',
                     question_text: resSpeechToText.message || '',
@@ -348,7 +348,7 @@ bot.on(message('voice'), async (ctx) => {
             // text to voice
             const resTextToVoice = await utils.textToVoice(filteredAnswer, folderPath);
             if (!resTextToVoice || !resTextToVoice.success) {
-                const dbMessage = await handlers.createMessage({
+                await handlers.createMessage({
                     user: dbUser._id,
                     question_type: 'voice',
                     question_text: resSpeechToText.message || '',
@@ -371,7 +371,7 @@ bot.on(message('voice'), async (ctx) => {
             // get answer voice url
             const answerVoiceFile = await ctx.telegram.getFileLink(answerVoice.voice.file_id);
 
-            const dbMessage = await handlers.createMessage({
+            await handlers.createMessage({
                 user: dbUser._id,
                 question_type: 'voice',
                 question_text: resSpeechToText.message || '',

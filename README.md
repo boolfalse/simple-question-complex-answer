@@ -3,7 +3,11 @@
 
 ---
 
-**Telegram bot that answers to your questions with a voice message.**
+- The Article on **Medium**: [Create your own AI voice assistant bot with Node.js using Google Bard](https://medium.com/@boolfalse/create-your-own-ai-voice-assistant-bot-with-node-js-using-google-bard-8d3572ed5272)
+- A short video on [**YouTube**](https://www.youtube.com/shorts/YFpR8x7sPQY) on how it works.
+- Demo Telegram channel: [**sqca_bot**](https://t.me/sqca_bot)
+
+> A Telegram bot that answers your questions with a voice message.
 
 <img src="https://i.imgur.com/mKNNZNv.jpg" alt="sqca" />
 
@@ -13,8 +17,9 @@ _A Simple Question => A Complex Answer_
 
 #### Prerequisites:
 
-- Node.js 18.* or higher installed
-- Python 3.* and pip installed
+- [Node.js](https://nodejs.org/en/download) 18.* or higher installed
+- [Python](https://www.python.org/downloads/) 3.* and pip installed
+- [FFmpeg](https://www.ffmpeg.org/download.html) installed
 
 
 
@@ -37,10 +42,11 @@ git clone git@github.com:boolfalse/simple-question-complex-answer.git && cd simp
 npm install
 ```
 
-- Install python dependencies:
+- Install python dependencies (you may use `pip3` instead of `pip` for your case):
 ```shell
-pip3 install bardapi
-pip3 install --upgrade GoogleBard
+pip install SpeechRecognition
+pip install bardapi
+pip install --upgrade GoogleBard
 ```
 
 - Create a `.env` file in the root directory of the project and add the following:
@@ -60,7 +66,7 @@ AWS_ACCESS_KEY=""
 AWS_SECRET_KEY=""
 
 # MongoDB Atlas connection string
-MONGO_URL="mongodb+srv://<USER>:<PASSWORD>@cluster0.mzcsh.mongodb.net/<DB_NAME>?retryWrites=true&w=majority"
+MONGODB_URI="mongodb+srv://<USER>:<PASSWORD>@cluster0.mzcsh.mongodb.net/<DB_NAME>?retryWrites=true&w=majority"
 ```
 
 - Run the app:
@@ -100,10 +106,13 @@ MONGO_URL="mongodb+srv://<USER>:<PASSWORD>@cluster0.mzcsh.mongodb.net/<DB_NAME>?
 
 #### Resources:
 
-- Demo Telegram channel: [https://t.me/sqca_bot](https://t.me/sqca_bot)
 - [Telegram Bot API](https://core.telegram.org/bots/api)
 - [Non-official python package Google Bard API](https://github.com/dsdanielpark/Bard-API/)
 - [Python SDK/API for reverse engineered Google Bard](https://github.com/acheong08/Bard/)
+- [Basics of creation of a similar project, but not the same](https://www.youtube.com/watch?v=-6ufFPvp6CY)
+- [Creating an IAM user in your AWS account](https://docs.aws.amazon.com/whitepapers/latest/how-aws-pricing-works/get-started-with-the-aws-free-tier.html)
+- [Changing permissions for an IAM user](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_change-permissions.html)
+- [Managing access keys for IAM users](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html)
 
 
 
